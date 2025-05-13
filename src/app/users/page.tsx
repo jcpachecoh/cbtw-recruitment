@@ -124,7 +124,7 @@ const UserManagementPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
       </div>
     );
   }
@@ -140,7 +140,7 @@ const UserManagementPage = () => {
       {/* Create User Modal Toggle */}
       <button
         onClick={() => setShowCreateModal(true)}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-4"
+        className="bg-yellow-200 text-black px-4 py-2 rounded hover:bg-blue-700 mb-4"
       >
         + Create User
       </button>
@@ -181,7 +181,7 @@ const UserManagementPage = () => {
               </select>
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+                className="w-full bg-yellow-200 text-black py-2 rounded hover:bg-blue-700"
               >
                 Save
               </button>
@@ -212,10 +212,10 @@ const UserManagementPage = () => {
                 <td className="p-3 capitalize">
                   <span className={`relative inline-block px-3 py-1 font-semibold leading-tight ${user.userStatus === 'active' ? 'text-green-900' :
                     user.userStatus === 'inactive' ? 'text-red-900' : 'text-yellow-900'
-                  }`}>
+                    }`}>
                     <span aria-hidden className={`absolute inset-0 opacity-50 rounded-full ${user.userStatus === 'active' ? 'bg-green-200' :
                       user.userStatus === 'inactive' ? 'bg-red-200' : 'bg-yellow-200'
-                    }`}></span>
+                      }`}></span>
                     <span className="relative">{user.userStatus}</span>
                   </span>
                 </td>
