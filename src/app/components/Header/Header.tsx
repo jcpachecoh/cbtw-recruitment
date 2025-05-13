@@ -1,32 +1,29 @@
 import React from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
 
-const Header: React.FC = () => {
+const navigation = [
+    { name: 'Home', href: '/' },
+    { name: 'Talent Acquisition', href: '/talent-adquision' },
+    { name: 'Candidates', href: '/candidates' },
+    { name: 'Users', href: '/users' },
+];
+
+const Header = () => {
     return (
-        <header className="text-black bg-whitep-4 shadow-md shadow-gray-200 fixed top-0 w-full">
+        <header className="bg-blue-500 text-white p-4 shadow-lg text-black">
             <nav className="container mx-auto flex justify-between items-center">
-                <Link href="/" className="text-xl font-bold hover:text-gray-300">
+                <Link href="/" className="flex items-center">
                     <Image src="/cbtw.png" alt="Logo" width={100} height={100} />
                 </Link>
                 <ul className="flex space-x-4">
-                    <li>
-                        <Link href="/" className="hover:text-gray-300">
-                            Home
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="/talent-adquision" className="hover:text-gray-300">
-                            Talent Adquision
-                        </Link>
-                    </li>
-
-                    <li>
-                        <Link href="/technical-lead" className="hover:text-gray-300">
-                            Technical Lead
-                        </Link>
-                    </li>
-
+                    {navigation.map((item) => (
+                        <li key={item.href}>
+                            <Link href={item.href} className="text-black hover:text-gray-300">
+                                {item.name}
+                            </Link>
+                        </li>
+                    ))}
                 </ul>
             </nav>
         </header>

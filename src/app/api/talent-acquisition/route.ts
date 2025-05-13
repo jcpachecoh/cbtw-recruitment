@@ -1,20 +1,173 @@
 import { NextResponse } from 'next/server';
+import { DynamoDBClient, CreateTableCommand, ScanCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { v4 as uuidv4 } from 'uuid';
+
+// Initialize DynamoDB client
+const client = new DynamoDBClient({
+  region: 'local',
+  endpoint: 'http://localhost:8000',
+  credentials: {
+    accessKeyId: 'dummy',
+    secretAccessKey: 'dummy'
+  }
+});
+
+const docClient = DynamoDBDocumentClient.from(client);
+const TABLE_NAME = 'Candidates';
+
+// Function to ensure table exists
+async function ensureTableExists() {
+  try {
+    await docClient.send(
+      new CreateTableCommand({
+        TableName: TABLE_NAME,
+        AttributeDefinitions: [
+          { AttributeName: 'id', AttributeType: 'S' }
+        ],
+        KeySchema: [
+          { AttributeName: 'id', KeyType: 'HASH' }
+        ],
+        ProvisionedThroughput: {
+          ReadCapacityUnits: 5,
+          WriteCapacityUnits: 5
+        }
+      })
+    );
+    console.log('Table created successfully');
+  } catch (error: any) {
+    // Ignore if table already exists
+    if (error.name !== 'ResourceInUseException') {
+      throw error;
+    }
+  }
+}
+
+const DEFAULT_STATUS = 'pending';
+
+export async function GET() {
+  try {
+    // Ensure table exists before proceeding
+    await ensureTableExists();
+
+    const command = new ScanCommand({
+      TableName: TABLE_NAME,
+    });
+
+    const response = await client.send(command);
+    
+    // Ensure all items have a status
+    const items = response.Items?.map(item => ({
+      ...item,
+      status: item.status || { S: DEFAULT_STATUS }
+    })) || [];
+    
+    return NextResponse.json({
+      message: 'Candidates retrieved successfully',
+      data: items
+    }, { status: 200 });
+
+  } catch (error) {
+    console.error('Error retrieving candidates:', error);
+    let errorMessage = 'Internal Server Error';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    return NextResponse.json({
+      message: 'Error retrieving candidates',
+      error: errorMessage
+    }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const data = await request.json();
+    
+    if (!data.id || !data.status) {
+      return NextResponse.json({
+        message: 'Missing required fields: id and status',
+      }, { status: 400 });
+    }
+
+    const command = new UpdateCommand({
+      TableName: TABLE_NAME,
+      Key: { id: data.id },
+      UpdateExpression: 'SET #status = :status',
+      ExpressionAttributeNames: {
+        '#status': 'status',
+      },
+      ExpressionAttributeValues: {
+        ':status': data.status,
+      },
+      ReturnValues: 'ALL_NEW',
+    });
+
+    const response = await client.send(command);
+
+    return NextResponse.json({
+      message: 'Candidate status updated successfully',
+      data: response.Attributes,
+    });
+
+  } catch (error) {
+    console.error('Error updating candidate status:', error);
+    let errorMessage = 'Internal Server Error';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    return NextResponse.json({
+      message: 'Error updating candidate status',
+      error: errorMessage
+    }, { status: 500 });
+  }
+}
 
 export async function POST(request: Request) {
   try {
+    // Ensure table exists before proceeding
+    await ensureTableExists();
+
     const formData = await request.json();
-    console.log('Talent Acquisition Form Data:', formData);
+    const timestamp = new Date().toISOString();
+    const id = uuidv4();
 
-    // Here you would typically save the formData to a database
-    // For example: await saveToDatabase(formData);
+    // Prepare the item for DynamoDB
+    const item = {
+      id,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      position: formData.position,
+      linkedinUrl: formData.linkedinUrl,
+      submittedAt: timestamp,
+      feedback: formData.feedback,
+      status: DEFAULT_STATUS,
+      recruiterName: formData.recruiterName || 'Unassigned',
+      technicalLeadName: formData.technicalLeadName || 'Unassigned'
+    };
 
-    return NextResponse.json({ message: 'Form submitted successfully', data: formData }, { status: 200 });
+    // Save to DynamoDB
+    await docClient.send(
+      new PutCommand({
+        TableName: TABLE_NAME,
+        Item: item
+      })
+    );
+
+    return NextResponse.json({
+      message: 'Form submitted successfully',
+      data: { id, ...formData }
+    }, { status: 200 });
+
   } catch (error) {
     console.error('Error processing form submission:', error);
     let errorMessage = 'Internal Server Error';
     if (error instanceof Error) {
-        errorMessage = error.message;
+      errorMessage = error.message;
     }
-    return NextResponse.json({ message: 'Error submitting form', error: errorMessage }, { status: 500 });
+    return NextResponse.json({
+      message: 'Error submitting form',
+      error: errorMessage
+    }, { status: 500 });
   }
 }
