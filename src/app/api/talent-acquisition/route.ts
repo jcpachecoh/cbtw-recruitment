@@ -55,13 +55,13 @@ export async function GET() {
     });
 
     const response = await client.send(command);
-    
+
     // Ensure all items have a status
     const items = response.Items?.map(item => ({
       ...item,
       status: item.status || { S: DEFAULT_STATUS }
     })) || [];
-    
+
     return NextResponse.json({
       message: 'Candidates retrieved successfully',
       data: items
@@ -83,7 +83,7 @@ export async function GET() {
 export async function PATCH(request: Request) {
   try {
     const data = await request.json();
-    
+
     if (!data.id || !data.status) {
       return NextResponse.json({
         message: 'Missing required fields: id and status',
@@ -142,8 +142,8 @@ export async function POST(request: Request) {
       submittedAt: timestamp,
       feedback: formData.feedback,
       status: DEFAULT_STATUS,
-      recruiterName: formData.recruiterName || 'Unassigned',
-      technicalLeadName: formData.technicalLeadName || 'Unassigned'
+      recruiterId: formData.recruiterId || 'Unassigned',
+      technicalLeadId: formData.technicalLeadId || 'Unassigned',
     };
 
     // Save to DynamoDB

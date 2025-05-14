@@ -50,11 +50,10 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    // Check if email already exists
-    const emailCheck = await client.send(new QueryCommand({
+    // Check if email already exists using scan
+    const emailCheck = await client.send(new ScanCommand({
       TableName: TABLE_NAME,
-      IndexName: 'EmailIndex',
-      KeyConditionExpression: 'email = :email',
+      FilterExpression: 'email = :email',
       ExpressionAttributeValues: {
         ':email': data.email
       }

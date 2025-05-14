@@ -4,6 +4,7 @@ import React from 'react';
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const [error, setError] = useState('');
@@ -86,6 +87,10 @@ export default function LoginPage() {
             >
               Sign in
             </button>
+
+            <Link href="/forgot-password" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+              Forgot your password?
+            </Link>
           </div>
         </form>
       </div>

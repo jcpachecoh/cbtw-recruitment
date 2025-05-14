@@ -174,7 +174,7 @@ const CandidatesPage: React.FC = () => {
                                             </span>
                                         )}
                                     </th>
-                                    <th 
+                                    <th
                                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                                         onClick={() => {
                                             if (sortField === 'recruiterName') {
@@ -192,7 +192,7 @@ const CandidatesPage: React.FC = () => {
                                             </span>
                                         )}
                                     </th>
-                                    <th 
+                                    <th
                                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                                         onClick={() => {
                                             if (sortField === 'technicalLeadName') {
@@ -242,6 +242,7 @@ const CandidatesPage: React.FC = () => {
                                     })
                                     .map((candidate) => (
                                         <tr key={candidate.id.S} className="hover:bg-gray-50">
+
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm font-medium text-gray-900">
                                                     {candidate.firstName.S} {candidate.lastName.S}
@@ -269,44 +270,44 @@ const CandidatesPage: React.FC = () => {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <select
-                                                        value={candidate.status?.S || DEFAULT_STATUS}
-                                                        onChange={async (e) => {
-                                                            const newStatus = e.target.value as Status;
-                                                            try {
-                                                                const response = await fetch('/api/talent-acquisition', {
-                                                                    method: 'PATCH',
-                                                                    headers: {
-                                                                        'Content-Type': 'application/json',
-                                                                    },
-                                                                    body: JSON.stringify({
-                                                                        id: candidate.id.S,
-                                                                        status: newStatus,
-                                                                    }),
-                                                                });
+                                                    value={candidate.status?.S || DEFAULT_STATUS}
+                                                    onChange={async (e) => {
+                                                        const newStatus = e.target.value as Status;
+                                                        try {
+                                                            const response = await fetch('/api/talent-acquisition', {
+                                                                method: 'PATCH',
+                                                                headers: {
+                                                                    'Content-Type': 'application/json',
+                                                                },
+                                                                body: JSON.stringify({
+                                                                    id: candidate.id.S,
+                                                                    status: newStatus,
+                                                                }),
+                                                            });
 
-                                                                if (!response.ok) {
-                                                                    throw new Error('Failed to update status');
-                                                                }
-
-                                                                // Update local state
-                                                                setCandidates(prev => prev.map(c =>
-                                                                    c.id.S === candidate.id.S
-                                                                        ? { ...c, status: { S: newStatus } }
-                                                                        : c
-                                                                ));
-                                                            } catch (err) {
-                                                                console.error('Error updating status:', err);
-                                                                alert('Failed to update status');
+                                                            if (!response.ok) {
+                                                                throw new Error('Failed to update status');
                                                             }
-                                                        }}
-                                                        className={`rounded-md text-sm font-medium ${getStatusColor(candidate.status.S)} border-0 focus:ring-2 focus:ring-indigo-500`}
-                                                    >
-                                                        {VALID_STATUSES.map(status => (
-                                                            <option key={status} value={status}>
-                                                                {status.charAt(0).toUpperCase() + status.slice(1)}
-                                                            </option>
-                                                        ))}
-                                                    </select>
+
+                                                            // Update local state
+                                                            setCandidates(prev => prev.map(c =>
+                                                                c.id.S === candidate.id.S
+                                                                    ? { ...c, status: { S: newStatus } }
+                                                                    : c
+                                                            ));
+                                                        } catch (err) {
+                                                            console.error('Error updating status:', err);
+                                                            alert('Failed to update status');
+                                                        }
+                                                    }}
+                                                    className={`rounded-md text-sm font-medium ${getStatusColor(candidate.status.S)} border-0 focus:ring-2 focus:ring-indigo-500`}
+                                                >
+                                                    {VALID_STATUSES.map(status => (
+                                                        <option key={status} value={status}>
+                                                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                                                        </option>
+                                                    ))}
+                                                </select>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm text-gray-900">
