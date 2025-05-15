@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import QuestionsTable from "../components/Questions/Questions";
-import { react_node } from "./interview_questions/react-node";
-import { useAuth } from "../context/AuthContext";
+import QuestionsTable from "../../components/Questions/Questions";
+import { react_node } from "../interview_questions/react-node";
+import { useAuth } from "../../context/AuthContext";
 import toast, { Toaster } from "react-hot-toast";
 
 interface Tab {
