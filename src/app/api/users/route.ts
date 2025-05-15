@@ -20,14 +20,29 @@ export async function GET() {
   try {
     const command = new ScanCommand({
       TableName: TABLE_NAME,
-      ProjectionExpression: 'id, email, userName, userType, userStatus, lastLoginTime, createdAt, department, userRole, avatarUrl'
+      ProjectionExpression: 'id, email, userName, firstName, lastName, userType, userStatus, lastLoginTime, createdAt, department, phoneNumber'
     });
 
     const response = await client.send(command);
 
+    // Transform the DynamoDB response to match the expected format
+    const users = response.Items?.map(item => ({
+      id: item.id,
+      email: item.email,
+      userName: item.userName,
+      firstName: item.firstName || '',
+      lastName: item.lastName || '',
+      userType: item.userType,
+      userStatus: item.userStatus || 'active',
+      department: item.department || '',
+      phoneNumber: item.phoneNumber || '',
+      lastLoginTime: item.lastLoginTime || null,
+      createdAt: item.createdAt
+    })) || [];
+
     return NextResponse.json({
       message: 'Users retrieved successfully',
-      data: response.Items
+      data: users
     }, { status: 200 });
 
   } catch (error) {
@@ -77,6 +92,8 @@ export async function POST(request: Request) {
       password: hashedPassword,
       userName: data.userName,
       userType: data.userType,
+      firstName: data.firstName,
+      lastName: data.lastName,
       userStatus: data.userStatus || 'active',
       lastLoginTime: null,
       createdAt: timestamp,

@@ -1,38 +1,49 @@
-'use client';
-import React from 'react';
+"use client";
+import React from "react";
 
-
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { useAuth } from "./context/AuthContext";
 
 export default function LoginPage() {
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const from = searchParams.get('from') || '/candidates';
+  const from = searchParams.get("from") || "/candidates";
+  const { refreshSession } = useAuth();
+
+  const pageRouting = {
+    "Talent Acquisition": "/talent-acquisition",
+    "Technical Lead": "/technical-lead",
+    Admin: "/users",
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const email = formData.get('email');
-    const password = formData.get('password');
+    const email = formData.get("email");
+    const password = formData.get("password");
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || 'Login failed');
+        throw new Error(data.message || "Login failed");
       }
-
-      router.push(from);
+      const data = await response.json();
+      console.log(data);
+      await refreshSession();
+      //validate the page based on role
+      const userType = data.user.userType;
+      router.push(pageRouting[userType as keyof typeof pageRouting]);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Login failed');
+      setError(error instanceof Error ? error.message : "Login failed");
     }
   };
   return (
@@ -47,7 +58,10 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold mb-6 text-gray-800">Login</h1>
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 text-left">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 text-left"
+            >
               Email Address
             </label>
             <div className="mt-1">
@@ -64,7 +78,10 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 text-left">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 text-left"
+            >
               Password
             </label>
             <div className="mt-1">
@@ -88,13 +105,16 @@ export default function LoginPage() {
               Sign in
             </button>
 
-            <Link href="/forgot-password" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+            <Link
+              href="/forgot-password"
+              className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+              target="_blank"
+            >
               Forgot your password?
             </Link>
           </div>
         </form>
       </div>
-
     </div>
   );
 }

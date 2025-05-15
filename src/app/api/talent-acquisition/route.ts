@@ -84,22 +84,35 @@ export async function PATCH(request: Request) {
   try {
     const data = await request.json();
 
-    if (!data.id || !data.status) {
+    if (!data.id || (!data.status && !data.technicalLeadId)) {
       return NextResponse.json({
-        message: 'Missing required fields: id and status',
+        message: 'Missing required fields',
       }, { status: 400 });
+    }
+
+    let updateExpression = 'SET';
+    const expressionAttributeNames: Record<string, string> = {};
+    const expressionAttributeValues: Record<string, any> = {};
+
+    if (data.status) {
+      updateExpression += ' #status = :status';
+      expressionAttributeNames['#status'] = 'status';
+      expressionAttributeValues[':status'] = data.status;
+    }
+
+    if (data.technicalLeadId) {
+      updateExpression += data.status ? ', ' : ' ';
+      updateExpression += '#technicalLeadId = :technicalLeadId';
+      expressionAttributeNames['#technicalLeadId'] = 'technicalLeadId';
+      expressionAttributeValues[':technicalLeadId'] = data.technicalLeadId;
     }
 
     const command = new UpdateCommand({
       TableName: TABLE_NAME,
       Key: { id: data.id },
-      UpdateExpression: 'SET #status = :status',
-      ExpressionAttributeNames: {
-        '#status': 'status',
-      },
-      ExpressionAttributeValues: {
-        ':status': data.status,
-      },
+      UpdateExpression: updateExpression,
+      ExpressionAttributeNames: expressionAttributeNames,
+      ExpressionAttributeValues: expressionAttributeValues,
       ReturnValues: 'ALL_NEW',
     });
 

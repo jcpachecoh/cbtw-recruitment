@@ -8,12 +8,13 @@ type UserStatus = 'active' | 'inactive' | 'pending';
 
 interface User {
   id: string;
+  firstName: string;
+  lastName: string;
   userName: string;
   email: string;
   userType: UserType;
   userStatus: UserStatus;
   department?: string;
-  userRole?: string;
   lastLoginTime?: string;
   createdAt: string;
   avatarUrl?: string;
@@ -24,16 +25,20 @@ const UserManagementPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     userType: 'recruiter' as UserType,
     department: '',
-    role: '',
     phoneNumber: '',
   });
+
+  const departments = ['HR', 'Engineering', 'Marketing', 'Sales'];
+  const roles = ['Admin', 'Recruiter', 'Technical Lead'];
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -64,18 +69,73 @@ const UserManagementPage = () => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const validateForm = () => {
+    const errors: { [key: string]: string } = {};
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email) {
+      errors.email = 'Email is required';
+    } else if (!emailRegex.test(formData.email)) {
+      errors.email = 'Invalid email format';
+    }
+
+    // Password validation
+    if (!formData.password) {
+      errors.password = 'Password is required';
+    } else if (formData.password.length < 8) {
+      errors.password = 'Password must be at least 8 characters';
+    } else if (!/[A-Z]/.test(formData.password)) {
+      errors.password = 'Password must contain at least one uppercase letter';
+    } else if (!/[a-z]/.test(formData.password)) {
+      errors.password = 'Password must contain at least one lowercase letter';
+    } else if (!/[0-9]/.test(formData.password)) {
+      errors.password = 'Password must contain at least one number';
+    }
+
+    // First Name validation
+    if (!formData.firstName.trim()) {
+      errors.firstName = 'First name is required';
+    }
+
+    // Last Name validation
+    if (!formData.lastName.trim()) {
+      errors.lastName = 'Last name is required';
+    }
+
+    // Department validation
+    if (!formData.department) {
+      errors.department = 'Department is required';
+    }
+
+    // User Type validation
+    if (!formData.userType) {
+      errors.userType = 'User type is required';
+    }
+
+    return errors;
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    setFormErrors({});
 
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setFormErrors(validationErrors);
+      return;
+    }
+
+    const dataPayload = { ...formData, userName: formData.email.split('@')[0] }
     try {
       const response = await fetch('/api/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataPayload),
       });
 
       const data = await response.json();
@@ -86,12 +146,12 @@ const UserManagementPage = () => {
 
       setSuccess('User created successfully');
       setFormData({
-        name: '',
+        firstName: '',
+        lastName: '',
         email: '',
         password: '',
         userType: 'recruiter',
         department: '',
-        role: '',
         phoneNumber: '',
       });
       fetchUsers();
@@ -147,45 +207,95 @@ const UserManagementPage = () => {
 
       {/* Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded shadow-md w-full max-w-md relative">
-            <button
-              onClick={() => setShowCreateModal(false)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-            >
-              ✕
-            </button>
-            <h2 className="text-xl font-bold mb-4">Create User</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {['userName', 'email', 'password', 'department', 'userRole', 'phoneNumber'].map((field) => (
-                <input
-                  key={field}
-                  type={field === 'password' ? 'password' : 'text'}
-                  name={field}
-                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                  value={formData[field as keyof typeof formData]}
-                  onChange={handleInputChange}
-                  required={['userName', 'email', 'password'].includes(field)}
-                  className="w-full border p-2 rounded"
-                />
-              ))}
-              <select
-                name="userType"
-                value={formData.userType}
-                onChange={handleInputChange}
-                className="w-full border p-2 rounded"
-              >
-                <option value="recruiter">Recruiter</option>
-                <option value="technical_lead">Technical Lead</option>
-                <option value="admin">Admin</option>
-              </select>
+        <div className="fixed inset-0 z-50">
+          {/* Overlay */}
+          <div
+            className="absolute inset-0 bg-black opacity-50"
+            onClick={() => setShowCreateModal(false)}
+          ></div>
+
+          <div className="fixed inset-0 z-50 flex items-center justify-center ">
+            <div className="bg-white p-6 rounded shadow-md w-full max-w-md relative">
               <button
-                type="submit"
-                className="w-full bg-yellow-200 text-black py-2 rounded hover:bg-blue-700"
+                onClick={() => setShowCreateModal(false)}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
               >
-                Save
+                ✕
               </button>
-            </form>
+              <h2 className="text-xl font-bold mb-4">Create User</h2>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {['firstName', 'lastName', 'email', 'password', 'phoneNumber'].map((field) => (
+                  <div key={field} className="space-y-1">
+                    <input
+                      type={field === 'password' ? 'password' : 'text'}
+                      name={field}
+                      value={formData[field as keyof typeof formData]}
+                      onChange={handleInputChange}
+                      placeholder={field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
+                      className={`w-full border p-2 rounded ${formErrors[field] ? 'border-red-500' : ''}`}
+                    />
+                    {formErrors[field] && (
+                      <p className="text-red-500 text-xs">{formErrors[field]}</p>
+                    )}
+                  </div>
+                ))}
+                <div className="space-y-1">
+                  <select
+                    name="department"
+                    value={formData.department}
+                    onChange={handleInputChange}
+                    className={`w-full border p-2 rounded ${formErrors.department ? 'border-red-500' : ''}`}
+                  >
+                    <option value="">Select Department</option>
+                    {departments.map((department) => (
+                      <option key={department} value={department}>
+                        {department}
+                      </option>
+                    ))}
+                  </select>
+                  {formErrors.department && (
+                    <p className="text-red-500 text-xs">{formErrors.department}</p>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <select
+                    name="userType"
+                    value={formData.userType}
+                    onChange={handleInputChange}
+                    className={`w-full border p-2 rounded ${formErrors.userType ? 'border-red-500' : ''}`}
+                  >
+                    <option value="">Select User Type</option>
+                    {roles.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </select>
+                  {formErrors.userType && (
+                    <p className="text-red-500 text-xs">{formErrors.userType}</p>
+                  )}
+                </div>
+
+                {error && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                    {error}
+                  </div>
+                )}
+                {success && (
+                  <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+                    {success}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  className="w-full bg-yellow-200 text-black py-2 rounded hover:bg-yellow-300 transition-colors"
+                >
+                  Save
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       )}
@@ -195,10 +305,13 @@ const UserManagementPage = () => {
         <table className="min-w-full text-sm">
           <thead className="bg-gray-100">
             <tr>
-              <th className="p-3 text-left font-medium">User Name</th>
+              <th className="p-3 text-left font-medium">Name</th>
+
               <th className="p-3 text-left font-medium">Email</th>
               <th className="p-3 text-left font-medium">Type</th>
               <th className="p-3 text-left font-medium">User Status</th>
+              <th className="p-3 text-left font-medium">Department</th>
+              <th className="p-3 text-left font-medium">Phone Number</th>
               <th className="p-3 text-left font-medium">Last Login</th>
               <th className="p-3 text-left font-medium">Actions</th>
             </tr>
@@ -206,9 +319,11 @@ const UserManagementPage = () => {
           <tbody>
             {users.map(user => (
               <tr key={user.id} className="border-t">
-                <td className="p-3">{user.userName}</td>
+                <td className="p-3">{user.firstName} {user.lastName}</td>
                 <td className="p-3">{user.email}</td>
                 <td className="p-3 capitalize">{user.userType}</td>
+
+
                 <td className="p-3 capitalize">
                   <span className={`relative inline-block px-3 py-1 font-semibold leading-tight ${user.userStatus === 'active' ? 'text-green-900' :
                     user.userStatus === 'inactive' ? 'text-red-900' : 'text-yellow-900'
@@ -219,6 +334,8 @@ const UserManagementPage = () => {
                     <span className="relative">{user.userStatus}</span>
                   </span>
                 </td>
+                <td className="p-3">{user.department}</td>
+                <td className="p-3">{user.phoneNumber}</td>
                 <td className="p-3">{user.lastLoginTime ? new Date(user.lastLoginTime).toLocaleDateString() : 'Never'}</td>
                 <td className="p-3 space-x-2">
                   <button

@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-      const decodedToken = verify(sessionCookie.value, JWT_SECRET) as { 
+      const decodedToken = verify(sessionCookie.value, JWT_SECRET) as {
         id: string;
         email: string;
         userName: string;
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     }
   } catch (error) {
     console.error('Session validation error:', error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       isValid: false,
       error: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });

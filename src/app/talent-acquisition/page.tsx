@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
+import { useAuth } from '../context/AuthContext';
 
 type Inputs = {
   firstName: string;
@@ -25,19 +26,22 @@ const positionOptions = [
 
 const TalentAdquisionPage: React.FC = () => {
   const { register, handleSubmit, formState: { errors }, reset } = useForm<Inputs>();
+  const { user } = useAuth();
+  console.log(JSON.stringify(user));
   const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [submissionMessage, setSubmissionMessage] = useState<string>('');
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setSubmissionStatus('submitting');
     setSubmissionMessage('Submitting your application...');
+    const userId = user?.id;
     try {
       const response = await fetch('/api/talent-acquisition', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, recruiterId: userId }),
       });
 
       const result = await response.json();
@@ -49,8 +53,8 @@ const TalentAdquisionPage: React.FC = () => {
         console.log('Form submitted successfully:', result.data);
         // Optionally, redirect or show a success message that stays longer
         setTimeout(() => {
-            setSubmissionStatus('idle');
-            setSubmissionMessage('');
+          setSubmissionStatus('idle');
+          setSubmissionMessage('');
         }, 5000); // Clear message after 5 seconds
       } else {
         setSubmissionStatus('error');
@@ -70,11 +74,10 @@ const TalentAdquisionPage: React.FC = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="max-w-2xl mx-auto bg-white p-8 shadow-xl rounded-lg space-y-6">
 
         {submissionStatus !== 'idle' && (
-          <div className={`p-4 rounded-md text-sm ${
-            submissionStatus === 'success' ? 'bg-green-100 text-green-700' :
+          <div className={`p-4 rounded-md text-sm ${submissionStatus === 'success' ? 'bg-green-100 text-green-700' :
             submissionStatus === 'error' ? 'bg-red-100 text-red-700' :
-            'bg-blue-100 text-blue-700' // submitting
-          }`}>
+              'bg-blue-100 text-blue-700' // submitting
+            }`}>
             {submissionMessage}
           </div>
         )}
