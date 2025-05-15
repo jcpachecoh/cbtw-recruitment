@@ -139,7 +139,7 @@ const UserManagementPage = () => {
       });
 
       const data = await response.json();
-
+      
       if (!response.ok) {
         throw new Error(data.message || 'Failed to create user');
       }
@@ -157,6 +157,8 @@ const UserManagementPage = () => {
       fetchUsers();
       setShowCreateModal(false);
     } catch (error) {
+      console.error('Error creating user:', error);
+
       setError(error instanceof Error ? error.message : 'Failed to create user');
     }
   };

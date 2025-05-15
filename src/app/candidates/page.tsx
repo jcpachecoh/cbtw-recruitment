@@ -327,7 +327,7 @@ const CandidatesPage: React.FC = () => {
                       <select
                         className="mt-1 border border-gray-300 rounded px-2 py-1 w-full max-w-xs"
                         name="technicalLead"
-                        value={selectedCandidate?.technicalLeadId?.S || ''}
+                        value={selectedCandidate?.technicalLeadId?.S || ""}
                         onChange={handleTechnicalLeadChange}
                       >
                         <option value="">Select Technical Lead</option>
