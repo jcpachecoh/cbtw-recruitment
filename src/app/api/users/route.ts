@@ -4,6 +4,8 @@ import { DynamoDBDocumentClient, PutCommand, QueryCommand, ScanCommand, UpdateCo
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs';
 
+import { ensureTableExists } from '../utils/dynamo';
+
 // Initialize DynamoDB client
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({
   region: 'local',
@@ -18,6 +20,7 @@ const TABLE_NAME = 'Users';
 
 export async function GET() {
   try {
+    await ensureTableExists(TABLE_NAME);
     const command = new ScanCommand({
       TableName: TABLE_NAME,
       ProjectionExpression: 'id, email, userName, userType, userStatus, lastLoginTime, createdAt, department, userRole, avatarUrl'
@@ -41,6 +44,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    await ensureTableExists(TABLE_NAME);
     const data = await request.json();
 
     // Validate required fields
@@ -117,6 +121,7 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    await ensureTableExists(TABLE_NAME);
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
@@ -160,6 +165,7 @@ export async function DELETE(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    await ensureTableExists(TABLE_NAME);
     const data = await request.json();
 
     if (!data.id) {

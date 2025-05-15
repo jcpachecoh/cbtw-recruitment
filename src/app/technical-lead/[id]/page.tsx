@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import QuestionsTable from '../components/Questions/Questions';
-import { react_node } from './interview_questions/react-node';
+import { useParams } from 'next/navigation';
 
+import QuestionsTable from '../../components/Questions/Questions';
+import { react_node } from '../interview_questions/react-node';
 
 interface Tab {
     id: string;
@@ -13,7 +14,8 @@ interface Tab {
 
 
 const TechnicalLeadPage: React.FC = () => {
-
+  const { id } = useParams();
+  
     const handleGradeChange = (questionId: string | number, grade: number) => {
         console.log(`Question ${questionId} graded as ${grade}`);
     };

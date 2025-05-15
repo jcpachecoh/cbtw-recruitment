@@ -16,7 +16,7 @@ type User = {
 const protectedNavigation = [
     { name: 'Talent Acquisition', href: '/talent-adquision' },
     { name: 'Candidates', href: '/candidates' },
-    { name: 'Technical Leads', href: '/technical-lead' },
+    // { name: 'Technical Leads', href: '/technical-lead' },
     { name: 'Users', href: '/users' },
 ];
 

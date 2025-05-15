@@ -324,6 +324,16 @@ const CandidatesPage: React.FC = () => {
                                                     {candidate.feedback?.S || '-'}
                                                 </div>
                                             </td>
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm text-gray-900">
+                                                    <Link
+                                                        href={`/technical-lead/${candidate.id?.S}`}
+                                                        className="px-4 py-2 bg-blue-200 rounded hover:bg-blue-300 color-dark-blue"
+                                                    >
+                                                        Interview
+                                                    </Link>
+                                                </div>
+                                            </td>
                                         </tr>
                                     ))}
                             </tbody>
