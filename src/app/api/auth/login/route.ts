@@ -4,6 +4,8 @@ import { DynamoDBDocumentClient, ScanCommand } from '@aws-sdk/lib-dynamodb';
 import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
 import { sign } from 'jsonwebtoken';
+import { useSetRecoilState } from 'recoil';
+import { onlineUserState } from '../../../recoilContextProvider';
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({
   region: 'local',
@@ -86,6 +88,8 @@ export async function POST(request: Request) {
       maxAge: 60 * 60 * 24 // 24 hours
     });
 
+    const setUser = useSetRecoilState(onlineUserState);
+    setUser(user);
     return response;
 
   } catch (error) {

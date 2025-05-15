@@ -3,6 +3,10 @@
 import React, { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 
+import { useRecoilValue } from 'recoil';
+import { onlineUserState } from '../../app/recoilContextProvider';
+
+
 type Inputs = {
   firstName: string;
   lastName: string;
@@ -24,6 +28,22 @@ const positionOptions = [
 ];
 
 const TalentAdquisionPage: React.FC = () => {
+
+    // Prepare the item for DynamoDB
+  interface User {
+    id: string,
+    firstName: string,
+    lastName: string,
+    position: string,
+    linkedinUrl: string,
+    submittedAt: Date,
+    feedback: string,
+    status: string,
+    recruiterId: string,
+    technicalLeadId: string,
+  };
+  
+  const user: User = useRecoilValue(onlineUserState);
   const { register, handleSubmit, formState: { errors }, reset } = useForm<Inputs>();
   const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [submissionMessage, setSubmissionMessage] = useState<string>('');
@@ -37,7 +57,7 @@ const TalentAdquisionPage: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({...data, recruiterId: user.id}),
       });
 
       const result = await response.json();

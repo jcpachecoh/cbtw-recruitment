@@ -118,8 +118,8 @@ export async function POST(request: Request) {
       submittedAt: timestamp,
       feedback: formData.feedback,
       status: DEFAULT_STATUS,
-      recruiterName: formData.recruiterId || 'Unassigned',
-      technicalLeadName: formData.technicalLeadId || 'Unassigned',
+      recruiterId: formData.recruiterId || 'Unassigned',
+      technicalLeadId: formData.technicalLeadId || 'Unassigned',
     };
 
     // Save to DynamoDB
