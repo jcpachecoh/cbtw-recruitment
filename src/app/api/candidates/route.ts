@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { ScanCommand } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
   PutCommand,
@@ -8,18 +8,11 @@ import {
 import { v4 as uuidv4 } from "uuid";
 
 import { ensureTableExists } from "../utils/dynamo";
+import { client } from "../../utils/dynamoClient";
 
 const TABLE_NAME = "Candidates";
 
 // Initialize DynamoDB client
-const client = new DynamoDBClient({
-  region: "local",
-  endpoint: "http://localhost:8000",
-  credentials: {
-    accessKeyId: "dummy",
-    secretAccessKey: "dummy",
-  },
-});
 
 const docClient = DynamoDBDocumentClient.from(client);
 
@@ -40,7 +33,7 @@ export async function GET() {
     const items =
       response.Items?.map((item) => ({
         ...item,
-        status: item.status || { S: DEFAULT_STATUS },
+        candidateStatus: item.candidateStatus || { S: DEFAULT_STATUS },
       })) || [];
 
     return NextResponse.json(
@@ -145,9 +138,8 @@ export async function POST(request: Request) {
       linkedinUrl: formData.linkedinUrl,
       submittedAt: timestamp,
       feedback: formData.feedback,
-      status: DEFAULT_STATUS,
-      recruiterName: formData.recruiterId || "Unassigned",
-      technicalLeadName: formData.technicalLeadId || "Unassigned",
+      candidateStatus: formData.candidateStatus,
+      recruiterId: formData.recruiterId || "Unassigned",
     };
 
     // Save to DynamoDB

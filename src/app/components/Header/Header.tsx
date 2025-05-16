@@ -17,12 +17,19 @@ export default function Header() {
     { name: "Candidates", href: "/candidates" },
   ];
   const protectedNavigationTechnicalLead = [
-    { name: "Technical Lead", href: "/technical-lead" },
+    {
+      name: "Technical Lead",
+      href: "/technical-lead",
+    },
+    {
+      name: "Interview Results",
+      href: "/interview-results",
+    },
   ];
   const protectedNavigationAdmin = [{ name: "Users", href: "/users" }];
 
   const protectedNavigationBasedOnRole = {
-    "Talent Acquisition": protectedNavigationTalentAcquisition,
+    Recruiter: protectedNavigationTalentAcquisition,
     "Technical Lead": protectedNavigationTechnicalLead,
     Admin: protectedNavigationAdmin,
   };
@@ -54,6 +61,7 @@ export default function Header() {
       console.error("Logout failed", e);
     }
   };
+  console.log("user", user);
 
   return (
     <header className="bg-white shadow-lg fixed top-0 w-full z-50">

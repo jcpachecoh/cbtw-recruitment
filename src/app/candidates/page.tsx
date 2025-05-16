@@ -9,7 +9,7 @@ type Column = {
     | "position"
     | "linkedin"
     | "submittedAt"
-    | "status"
+    | "candidateStatus"
     | "recruiterName"
     | "technicalLeadName"
     | "feedback";
@@ -28,14 +28,14 @@ interface User {
   userType: string;
 }
 
-interface Candidate {
+export interface Candidate {
   id: { S: string };
   firstName: { S: string };
   lastName: { S: string };
   position: { S: string };
   linkedinUrl: { S: string };
   submittedAt: { S: string };
-  status: { S: string };
+  candidateStatus: { S: string };
   recruiterId: { S: string };
   technicalLeadId: { S: string };
   feedback?: { S: string };
@@ -70,7 +70,7 @@ const COLUMNS: Column[] = [
   { key: "position", label: "Position", sortable: true },
   { key: "linkedin", label: "LinkedIn" },
   { key: "submittedAt", label: "Submitted At", sortable: true },
-  { key: "status", label: "Status", sortable: true },
+  { key: "candidateStatus", label: "Status", sortable: true },
   { key: "recruiterName", label: "Recruiter", sortable: true },
   { key: "technicalLeadName", label: "Technical Lead", sortable: true },
   { key: "feedback", label: "Feedback" },
@@ -131,7 +131,7 @@ const CandidatesPage: React.FC = () => {
         setUsers(usersResult.data || []);
 
         // Then fetch candidates
-        const candidatesResponse = await fetch("/api/talent-acquisition");
+        const candidatesResponse = await fetch("/api/candidates");
         const candidatesResult = await candidatesResponse.json();
 
         if (!candidatesResponse.ok) {
@@ -154,6 +154,8 @@ const CandidatesPage: React.FC = () => {
 
     fetchData();
   }, []);
+
+  console.log(candidates);
 
   if (loading) {
     return (
@@ -207,7 +209,7 @@ const CandidatesPage: React.FC = () => {
     if (!selectedCandidate) return;
 
     try {
-      const response = await fetch("/api/talent-acquisition", {
+      const response = await fetch("/api/candidates", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -314,7 +316,7 @@ const CandidatesPage: React.FC = () => {
 
                   <div>
                     <p className="font-semibold">Status:</p>
-                    <p>{selectedCandidate?.status.S}</p>
+                    <p>{selectedCandidate?.candidateStatus.S}</p>
                   </div>
                   <div>
                     <p className="font-semibold">Recruiter:</p>
@@ -420,11 +422,11 @@ const CandidatesPage: React.FC = () => {
                           (new Date(a.submittedAt.S).getTime() -
                             new Date(b.submittedAt.S).getTime())
                         );
-                      case "status":
+                      case "candidateStatus":
                         return (
                           direction *
-                          (a.status?.S || DEFAULT_STATUS).localeCompare(
-                            b.status?.S || DEFAULT_STATUS
+                          (a.candidateStatus.S || DEFAULT_STATUS).localeCompare(
+                            b.candidateStatus.S || DEFAULT_STATUS
                           )
                         );
                       case "recruiterName":
@@ -477,53 +479,7 @@ const CandidatesPage: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <select
-                          value={candidate.status?.S || DEFAULT_STATUS}
-                          onChange={async (e) => {
-                            const newStatus = e.target.value as Status;
-                            try {
-                              const response = await fetch(
-                                "/api/talent-acquisition",
-                                {
-                                  method: "PATCH",
-                                  headers: {
-                                    "Content-Type": "application/json",
-                                  },
-                                  body: JSON.stringify({
-                                    id: candidate.id.S,
-                                    status: newStatus,
-                                  }),
-                                }
-                              );
-
-                              if (!response.ok) {
-                                throw new Error("Failed to update status");
-                              }
-
-                              // Update local state
-                              setCandidates((prev) =>
-                                prev.map((c) =>
-                                  c.id.S === candidate.id.S
-                                    ? { ...c, status: { S: newStatus } }
-                                    : c
-                                )
-                              );
-                              toast.success("Status updated successfully");
-                            } catch (err) {
-                              console.error("Error updating status:", err);
-                              toast.error("Failed to update status");
-                            }
-                          }}
-                          className={`rounded-md text-sm font-medium ${getStatusColor(
-                            candidate.status.S
-                          )} border-0 focus:ring-2 focus:ring-indigo-500`}
-                        >
-                          {VALID_STATUSES.map((status) => (
-                            <option key={status} value={status}>
-                              {status.charAt(0).toUpperCase() + status.slice(1)}
-                            </option>
-                          ))}
-                        </select>
+                        {candidate.candidateStatus.S || DEFAULT_STATUS}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
@@ -532,7 +488,8 @@ const CandidatesPage: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {getUserName(candidate.technicalLeadId.S)}
+                          {candidate.technicalLeadId?.S &&
+                            getUserName(candidate.technicalLeadId.S)}
                         </div>
                       </td>
                       <td className="px-6 py-4">

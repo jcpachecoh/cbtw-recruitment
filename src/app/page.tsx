@@ -14,7 +14,7 @@ export default function LoginPage() {
   const { refreshSession } = useAuth();
 
   const pageRouting = {
-    "Talent Acquisition": "/talent-acquisition",
+    Recruiter: "/talent-acquisition",
     "Technical Lead": "/technical-lead",
     Admin: "/users",
   };
