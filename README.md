@@ -18,7 +18,11 @@ A modern recruitment platform built with [Next.js](https://nextjs.org) and [Amaz
 
 To run this app, you'll need valid AWS credentials with access to DynamoDB. You can configure them via environment variables or AWS CLI.
 
-### 1. Using `.env` file
+### 1.Local Dynamo DB
+
+run `docker compose up -d`
+
+### 2. Using `.env` file
 
 Create a `.env` file at the root of your project:
 
