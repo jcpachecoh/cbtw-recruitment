@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import QuestionsTable, { Question } from "@/app/components/Questions/Questions";
-import { react_node } from "@/app/utils/interview_questions/react-node";
+import { questionary, Questionary } from "@/app/utils/interview_questions/react-node";
 import toast, { Toaster } from "react-hot-toast";
 
 const CandidateInterview: React.FC = () => {
@@ -18,6 +18,7 @@ const CandidateInterview: React.FC = () => {
   >({});
   const [passInterview, setPassInterview] = useState(false);
   const [finalComments, setFinalComments] = useState("");
+  const [questions, setQuestions] = useState([{}]);
 
   useEffect(() => {
     const fetchCandidateData = async () => {
@@ -26,8 +27,12 @@ const CandidateInterview: React.FC = () => {
         if (!response.ok) {
           throw new Error("Failed to fetch candidate data");
         }
-        const data = await response.json();
-        setCandidate(data.data);
+        const { data } = await response.json();
+        setCandidate(data);
+        const questions = questionary.filter(
+          ({technology}) =>technology === (data?.techStack ?? 'node-react')
+        )[0]?.questions;
+        setQuestions(questions);
         setLoading(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
@@ -47,7 +52,7 @@ const CandidateInterview: React.FC = () => {
   ) => {
     setInterviewResults({
       ...interviewResults,
-      [questionId]: { ...react_node[questionId as number], grade },
+      [questionId]: { ...questions[questionId as number], grade },
     });
   };
 
@@ -307,7 +312,7 @@ const CandidateInterview: React.FC = () => {
 
       <div className="overflow-y-auto max-h-[40vh]">
         <QuestionsTable
-          questions={react_node}
+          questions={questions}
           onGradeChange={handleGradeChange}
           title="Technical Interview Questions"
         />
